@@ -8,12 +8,17 @@ import io from 'socket.io-client';
 import feathers from '@feathersjs/feathers';
 import socketio from '@feathersjs/socketio-client';
 
+// REDUX
+import store from './components/store/index.js';
+
 class App extends React.Component {
 
   constructor(props) {
     super(props);
 
-    this.state = {};
+    this.state = {
+      vehicles: []
+    };
   }
 
   componentDidMount() {
@@ -30,7 +35,15 @@ class App extends React.Component {
     const messageService = client.service('vehicle');
 
     socket.emit('find', 'vehicle', { status: 'read' }, (error, data) => {
-      console.log('Found all vehicles', data);
+      
+      // COMMIT ALL VEHICLES TO STATE
+      this.setState(prevState => ({ vehicles: [...data] }), () => {
+
+        // DISPATCH TO REDUX STORE
+        // console.log(this.state.vehicles);
+        store.dispatch({ type: 'ALL_VEHICLES', payload: this.state.vehicles });
+      });
+
     });
 
   }
@@ -38,7 +51,9 @@ class App extends React.Component {
   render() {
     return (
       <div className="App">
-        <MapSection />
+        <MapSection
+          all_vehicles={null}
+        />
       </div>
     )
   }
