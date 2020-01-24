@@ -1,26 +1,47 @@
-import React from 'react';
-import logo from './logo.svg';
+import React, { Component } from 'react';
 import './App.css';
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+import MapSection from './components/map/map.js';
+
+// IMPORT FEATHERS, SOCKET
+import io from 'socket.io-client';
+import feathers from '@feathersjs/feathers';
+import socketio from '@feathersjs/socketio-client';
+
+class App extends React.Component {
+
+  constructor(props) {
+    super(props);
+
+    this.state = {};
+  }
+
+  componentDidMount() {
+
+    // CONNECT TO SOCKET
+    const socket = io('http://korys-mbp:3030', {
+      transports: ['websocket'],
+      forceNew: true
+    });
+    const client = feathers();
+
+    client.configure(socketio(socket), {timeout: 2000});
+
+    const messageService = client.service('vehicle');
+
+    socket.emit('find', 'vehicle', { status: 'read' }, (error, data) => {
+      console.log('Found all vehicles', data);
+    });
+
+  }
+
+  render() {
+    return (
+      <div className="App">
+        <MapSection />
+      </div>
+    )
+  }
 }
 
 export default App;
